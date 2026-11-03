@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored MediaPipe runtime (copied from node_modules by scripts/copy-fitcheck-assets.mjs)
+    "public/fitcheck/**",
+    "storage/**",
   ]),
 ]);
 
