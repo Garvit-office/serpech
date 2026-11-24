@@ -6,16 +6,49 @@ Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · SQLite (Node's built
 
 ## Run it
 
+This is a monorepo (npm workspaces + [Turborepo](https://turborepo.com)). Run everything from the repository root:
+
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 npm run build && npm start   # production
 npm run lint
+npm run typecheck
 ```
 
-Requires **Node 22.13+** (uses the built-in `node:sqlite`). On first start the database is created at `storage/sarpech.db` and filled with the sample catalogue.
+Requires **Node 22.13+** (uses the built-in `node:sqlite`). On first start the database is created at `apps/web/storage/sarpech.db` and filled with the sample catalogue.
 
-Copy `.env.example` to `.env.local` and set the values — see [Admin](#admin).
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set the values — see [Admin](#admin).
+
+`npm run dev` starts the web app and the mobile app's Expo server together. To get Expo's QR code and keyboard shortcuts, run them in two terminals instead: `npm run dev:web` and `npm run dev:mobile`.
+
+### Mobile app
+
+`apps/mobile` is an Expo (SDK 58) app for iOS and Android. It talks to the web app's `/api/mobile/v1` endpoints.
+
+- Copy `apps/mobile/.env.example` to `apps/mobile/.env.local`. `EXPO_PUBLIC_API_URL` defaults to `http://localhost:3000`, which works in the iOS simulator. For the Android emulator, run `adb reverse tcp:3000 tcp:3000` once. A real phone needs an https URL (for example a tunnel), because the camera Fit Check needs a secure origin.
+- `npm run dev:mobile`, then press `i` (iOS simulator) or `a` (Android), or scan the QR code with Expo Go.
+- Release builds use EAS (`cd apps/mobile && npx eas-cli@latest build --profile production`). `apps/mobile/eas.json` sets `EXPO_PUBLIC_API_URL` for each profile.
+
+To run a command in one workspace only: `npm run dev -w @sarpech/web`, or `npx turbo run lint --filter=@sarpech/brand`. Add a dependency to the app with `npm install <pkg> -w @sarpech/web`.
+
+### Workspaces
+
+```
+apps/
+  web/                @sarpech/web — the Next.js store + /admin + mobile API (everything below lives here)
+  mobile/             @sarpech/mobile — Expo / React Native app (see Mobile app)
+packages/
+  core/               @sarpech/core — types, Royal Fit sizing (fit), catalogue helpers (catalog),
+                      formatting, categories, size charts. Plain TypeScript, no framework.
+  brand/              @sarpech/brand — SarpechEmblem, Logo, BrandLoader, Splash, ornaments/*,
+                      and styles.css (design tokens + embroidery motion)
+  backend/            @sarpech/backend — server code (database, auth, checkout, mobile API handlers)
+  config/             @sarpech/config — shared tsconfig presets and ESLint presets
+turbo.json            task pipeline: build, dev, start, lint, typecheck (cached)
+```
+
+Packages ship TypeScript source; the app compiles them (`transpilePackages` in `apps/web/next.config.ts`). Import them by subpath, e.g. `import { recommendSize } from "@sarpech/core/fit"` or `import { SarpechEmblem } from "@sarpech/brand/SarpechEmblem"`. The app's CSS pulls in the brand with `@import "@sarpech/brand/styles.css"`, which also tells Tailwind to scan the package for classes.
 
 ## Admin
 
@@ -37,7 +70,7 @@ Prices are always recalculated on the server at checkout (sale + coupon + shippi
 
 ### Data & deployment
 
-Everything is stored under `storage/` (override with `SARPECH_DATA_DIR`): `sarpech.db` and `uploads/` (served at `/media/...`). Back up that folder. Deploy to a host with a persistent disk — a VPS, Railway, Render or Fly.io volume. Serverless platforms without a disk (e.g. Vercel) need the repositories in `lib/server/*` moved to a hosted database (Postgres/Turso) and uploads to object storage; nothing else changes.
+Everything is stored under `apps/web/storage/` (override with `SARPECH_DATA_DIR`): `sarpech.db` and `uploads/` (served at `/media/...`). Back up that folder. Deploy to a host with a persistent disk — a VPS, Railway, Render or Fly.io volume. Serverless platforms without a disk (e.g. Vercel) need the repositories in `lib/server/*` moved to a hosted database (Postgres/Turso) and uploads to object storage; nothing else changes.
 
 Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://sarpech.in`) for absolute URLs in the sitemap, canonical tags and Open Graph.
 
@@ -58,17 +91,20 @@ Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://sarpech.in`) for absolute URLs in the 
 
 ## Structure
 
+Paths below are inside `apps/web/` unless they start with `packages/`.
+
 ```
 app/                      routes, sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx, icon.png
+packages/brand/src/       SarpechEmblem (inline official emblem), Logo (roundel, wordmark, lockup), BrandLoader, Splash
+packages/brand/src/ornaments/  ZariBorder, CornerOrnament, SectionDivider, Jaali, EmbroideredFrame, StitchIn
 components/
-  brand/                  SarpechEmblem (inline official emblem), Logo (roundel, wordmark, lockup)
-  ornaments/              ZariBorder, CornerOrnament, SectionDivider, Jaali, EmbroideredFrame, StitchIn
   shop/                   ProductCard, ProductImage, ProductDetail, ShopView, CartLines, CheckoutView, …
   layout/                 Header, Footer, MobileNav, CartDrawer, SearchDialog, PageHeader
   content/                page-specific pieces (fitting form, accordion, measuring diagram)
   ui/                     Dialog (native <dialog>), icons, QuantityStepper
-data/                     products.ts (first-run seed), categories.ts, size-guide.ts
-lib/                      catalog.ts (cached storefront reads), catalog-shared.ts, types.ts, track.ts, store/ (cart, wishlist, catalog)
+data/                     products.ts (first-run seed)
+packages/core/src/        types.ts, fit.ts, catalog.ts (pure catalogue helpers), format.ts, categories.ts, size-guide.ts
+lib/                      catalog.ts (cached storefront reads), track.ts, store/ (cart, wishlist, catalog, account, fit)
 lib/server/               database + repositories, auth, admin action helpers (server-only)
 app/admin/                admin (login + (panel)/…); app/actions/store.ts — checkout, coupons, forms
 app/api/track             activity beacon · app/media — uploaded images · proxy.ts — admin route guard
@@ -77,7 +113,7 @@ public/logo/              official logo files
 
 ### Design tokens
 
-Defined in `app/globals.css` under `@theme` and available as Tailwind utilities:
+Defined in `packages/brand/styles.css` under `@theme` and available as Tailwind utilities:
 
 | Token | Value | Use |
 | --- | --- | --- |
@@ -94,7 +130,7 @@ Motion (`.stitch-in`, `.gold-shimmer`) is switched off under `prefers-reduced-mo
 
 The official files are in `public/logo/`. They're used for the favicon and app icon (`app/icon.png`, `app/apple-icon.png` copied from `favicon_512.png`), the web manifest, and the Open Graph image (`sarpech_logo_primary.png`).
 
-The header, footer, dividers and placeholders draw the emblem inline with `<SarpechEmblem/>` so it can be gold, green, ivory or white and "stitch in" on scroll. Its paths in `components/brand/emblem-geometry.ts` are the official artwork's paths scaled to a 200-unit grid. If the master logo changes, update that file to match.
+The header, footer, dividers and placeholders draw the emblem inline with `<SarpechEmblem/>` so it can be gold, green, ivory or white and "stitch in" on scroll. Its paths in `packages/brand/src/emblem-geometry.ts` are the official artwork's paths scaled to a 200-unit grid. If the master logo changes, update that file to match.
 
 ## Add a product
 
@@ -130,7 +166,7 @@ Customers sign up and sign in at `/account/register` and `/account/login`. Guest
    - **Fit Check (camera):** MediaPipe Pose runs in the browser. Customers stand 2–3 m away with arms out, then optionally turn side-on. Height sets the scale, the silhouette gives chest, waist and hip girths, and joint positions give shoulder, sleeve and inseam. Values are medians over many frames.
    - **Manual entry,** or a **quick estimate** from height, weight and build.
 2. **Choose a fit:** Royal Tailored, Regular, Relaxed (a little baggy) or Loose, plus length and sleeve preferences and notes for the tailor.
-3. **Result:** each product shows the recommended size (from `data/size-guide.ts`, see `recommendSize` in `lib/fit.ts`) and, where allowed, **Made to Measure**. That adds the fee and stores the measurements on the order. Admin → Orders shows a printable **tailoring sheet**.
+3. **Result:** each product shows the recommended size (from `packages/core/src/size-guide.ts`, see `recommendSize` in `packages/core/src/fit.ts`) and, where allowed, **Made to Measure**. That adds the fee and stores the measurements on the order. Admin → Orders shows a printable **tailoring sheet**.
 
 The profile is saved only in the customer's browser. The camera image never leaves the device; the model and runtime are self-hosted in `public/fitcheck/` (`npm install` copies the runtime there).
 

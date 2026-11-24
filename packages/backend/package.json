@@ -1,0 +1,28 @@
+{
+  "name": "@sarpech/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SARPECH backend: SQLite database and repositories, customer + admin auth, checkout, Razorpay, email, stock, Design Studio pricing and the mobile API handlers. Used by apps/web (pages, server actions, /api routes) \u2014 one source of truth for every channel.",
+  "exports": {
+    "./*": "./src/*.ts",
+    "./mobile/*": "./src/mobile/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sarpech/core": "*"
+  },
+  "peerDependencies": {
+    "next": "16.4.3",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@sarpech/config": "*",
+    "@types/node": "^24.19.2",
+    "eslint": "^9",
+    "typescript": "^5"
+  }
+}

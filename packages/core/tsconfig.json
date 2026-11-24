@@ -1,0 +1,6 @@
+{
+  "extends": "@sarpech/config/tsconfig/base.json",
+  "include": [
+    "src"
+  ]
+}

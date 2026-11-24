@@ -1,0 +1,26 @@
+{
+  "name": "@sarpech/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SARPECH shared logic: types, Royal Fit sizing, catalogue helpers, formatting, categories and size charts. Framework-free TypeScript source.",
+  "exports": {
+    "./types": "./src/types.ts",
+    "./fit": "./src/fit.ts",
+    "./catalog": "./src/catalog.ts",
+    "./format": "./src/format.ts",
+    "./color": "./src/color.ts",
+    "./size-guide": "./src/size-guide.ts",
+    "./categories": "./src/categories.ts",
+    "./designer": "./src/designer.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@sarpech/config": "*",
+    "eslint": "^9",
+    "typescript": "^5"
+  }
+}

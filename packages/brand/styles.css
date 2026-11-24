@@ -1,0 +1,131 @@
+/* ==================================================================
+   @sarpech/brand — styles
+   Design tokens (Tailwind v4 @theme), embroidery motion, the brand loader
+   and the first-visit splash. Use after Tailwind:
+
+     @import "tailwindcss";
+     @import "@sarpech/brand/styles.css";
+
+   The app provides the font variables --font-cinzel and --font-cormorant
+   (next/font in apps/web/app/layout.tsx).
+   ================================================================== */
+
+/* Let Tailwind see the utility classes used inside this package. */
+@source "./src";
+
+/* ------------------------------------------------------------------
+   SARPECH design tokens
+   Colours are taken from the logo: deep green-black ground, zari gold
+   thread, ruby jewel. White is the page; green is the ink.
+------------------------------------------------------------------- */
+@theme {
+  --color-brand-green: #0e1a15;
+  --color-brand-green-2: #1f3a2e;
+  --color-brand-green-3: #2c4a3c;
+  --color-gold: #c9a04a;
+  --color-gold-light: #f3dfa2;
+  --color-gold-dark: #8e6a22;
+  --color-ruby: #a3162b;
+  --color-ivory: #f5eee0;
+  --color-pearl: #faf8f3; /* off-white product card ground */
+  --color-mist: #e9e4d8; /* hairlines on white */
+  --color-ink-soft: #3d4a44; /* secondary text on white, AA on #fff */
+
+  --font-display: var(--font-cinzel), "Cinzel", Georgia, serif;
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(14 26 21 / 0.04), 0 8px 24px -12px rgb(14 26 21 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(14 26 21 / 0.06), 0 18px 40px -18px rgb(14 26 21 / 0.35);
+
+  --animate-shimmer: shimmer 2.8s ease-out 0.4s 1 both;
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes shimmer {
+    from { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+    20% { opacity: 1; }
+    to { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Embroidery motion
+------------------------------------------------------------------- */
+
+/* Strokes that "stitch in" when their section enters the viewport.
+   pathLength="1" is set on the SVG elements so one dash covers any path. */
+.stitch-in [data-stitch] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+.stitch-in.is-stitched [data-stitch] { stroke-dashoffset: 0; }
+
+/* Shimmer sweeping across a gold ornament */
+.gold-shimmer { position: relative; overflow: hidden; }
+.gold-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -10% auto -10% 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 244 210 / 0.55), transparent);
+  mix-blend-mode: soft-light;
+  animation: var(--animate-shimmer);
+  pointer-events: none;
+}
+
+/* Brand loader: the emblem stitches itself in, then breathes. */
+.sp-loader [data-stitch] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sp-stitch 1.5s cubic-bezier(0.45, 0.05, 0.25, 1) 0.1s forwards;
+}
+.sp-loader-breathe {
+  animation: sp-breathe 2.6s ease-in-out 1.4s infinite;
+}
+.sp-loader-thread {
+  position: relative;
+  overflow: hidden;
+}
+.sp-loader-thread::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+  animation: sp-thread 1.6s ease-in-out infinite;
+}
+@keyframes sp-stitch { to { stroke-dashoffset: 0; } }
+@keyframes sp-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.035); opacity: 1; }
+}
+@keyframes sp-thread {
+  from { translate: -100% 0; }
+  to { translate: 250% 0; }
+}
+
+/* First-visit splash (src/Splash.tsx): shown once per session,
+   fades away on its own — it never waits on JavaScript and never blocks taps. */
+.sp-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  animation: sp-splash-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
+}
+html[data-splash="seen"] .sp-splash { display: none; }
+@keyframes sp-splash-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stitch-in [data-stitch] { stroke-dashoffset: 0; }
+  .gold-shimmer::after { display: none; }
+  .sp-splash { display: none; }
+  .sp-loader [data-stitch] { stroke-dashoffset: 0; animation: none; }
+  .sp-loader-breathe, .sp-loader-thread::after { animation: none; }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@sarpech/brand",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SARPECH brand: emblem, logo, loader, splash, embroidery ornaments and design tokens (styles.css).",
+  "exports": {
+    "./styles.css": "./styles.css",
+    "./SarpechEmblem": "./src/SarpechEmblem.tsx",
+    "./Logo": "./src/Logo.tsx",
+    "./BrandLoader": "./src/BrandLoader.tsx",
+    "./Splash": "./src/Splash.tsx",
+    "./emblem-geometry": "./src/emblem-geometry.ts",
+    "./ornaments/*": "./src/ornaments/*.tsx"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@sarpech/config": "*",
+    "@types/react": "^19",
+    "eslint": "^9",
+    "typescript": "^5"
+  }
+}

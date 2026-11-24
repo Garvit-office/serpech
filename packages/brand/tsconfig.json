@@ -1,0 +1,6 @@
+{
+  "extends": "@sarpech/config/tsconfig/react-library.json",
+  "include": [
+    "src"
+  ]
+}

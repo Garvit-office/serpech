@@ -1,0 +1,19 @@
+{
+  "name": "@sarpech/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared TypeScript and ESLint presets for the SARPECH workspaces.",
+  "exports": {
+    "./eslint": "./eslint.mjs",
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
+    "./tsconfig/react-library.json": "./tsconfig/react-library.json"
+  },
+  "dependencies": {
+    "eslint-config-next": "16.4.3"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}

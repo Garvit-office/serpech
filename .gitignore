@@ -14,11 +14,11 @@
 /coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
 
 # misc
 .DS_Store
@@ -42,7 +42,11 @@ yarn-error.log*
 next-env.d.ts
 
 # local database & uploaded media
-/storage
+# Live database and uploads (apps/web/storage)
+storage/
 
 # MediaPipe runtime, copied from node_modules on `npm install`
-/public/fitcheck/wasm
+apps/web/public/fitcheck/wasm
+
+# Turborepo
+.turbo
